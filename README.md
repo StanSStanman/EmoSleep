@@ -40,7 +40,7 @@ or
 In order to **come back to the base environment** you can type:
 > conda deactivate
 
-Other information about environment creation can be found [here](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#).
+Other information about environment creation can be found <a target="_blank" href="https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html#">here</a>.
 
 ### Step 3 - install libraries
 Now we need to install libraries, i.e. the toolboxes containing all the classes and functions used to perform a specific programming task (e.g. array managing is performed by the numpy library).
