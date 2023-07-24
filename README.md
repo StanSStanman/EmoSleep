@@ -13,8 +13,7 @@ It will automatically create a 'base' python environment (usually the latest
 version), then the user can create customized environments containing the 
 disired python version and the needed libraries. 
 
-You can find the latest version of miniconda [here](https://docs.conda.io/en/latest/miniconda.html#latest-miniconda-installer-links).
-
+You can find the latest version of miniconda [here](https://docs.conda.io/en/latest/miniconda.html#latest-miniconda-installer-links) <a href='https://docs.conda.io/en/latest/miniconda.html#latest-miniconda-installer-links' target='_blank'>here</a>.
 Read the terms, accept all, keep the recommended position for the installation, and at last confirm the **automatic configuration**.
 Once the installation is complete it would be better to restart the user session or to write in a new terminal (just for unix systems):
 
