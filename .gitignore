@@ -399,3 +399,4 @@ FodyWeavers.xsd
 
 # Other files and directories
 emosleep/notebooks
+emosleep.egg-info/
