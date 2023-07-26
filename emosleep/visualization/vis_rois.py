@@ -3,6 +3,9 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import seaborn as ss
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+from plotly.colors import n_colors
 from emosleep.visualization.utils import load_aparc, scaling
 
 
@@ -246,12 +249,85 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
     return fig
 
 
+def descriptive_violin(data):
+    # same x ranges for the plot
+    rmin, rmax = data.min() - .5, data.max() + .5
+    # loop over left and right
+    hemi = ['lh', 'rh']
+    for h in hemi:
+        h_lab = [l for l in data.roi.values if l.endswith(h)]
+        abs_lab = [l.replace('-{0}'.format(h), '') for l in h_lab]
+        
+        _data = data.sel({'roi': h_lab})
+        # _data = _data.sel({'times': slice(-.15, .15)})
+        _data['roi'] = abs_lab
+        
+        ordered_labels = load_aparc(abs_lab)
+        
+        _data = _data.sel({'roi': ordered_labels['roi']})
+        _data['roi'] = ordered_labels['label']
+        
+        colors = ordered_labels['color']
+        
+        conditions = [1, 2, 3]  # corresponding to negative, neutral, positive
+    
+        # fig = go.Figure()
+        fig = make_subplots(rows=1, cols=3, 
+                            subplot_titles=['negative', 'neutral', 'positive'])
+        if h == 'lh':
+            plot_title = 'Left hemisphere'
+        elif h == 'rh':
+            plot_title = 'Right hemisphere'
+        
+        for cond in conditions:
+            _d = _data.sel({'trials': _data.condition == cond})#.mean('times')
+            for _dl, color in zip(_d, colors):
+                
+                if cond == 3:
+                    sl = True
+                else:
+                    sl = False
+                
+                fig.add_trace(go.Violin(x=_dl, line_color=color,
+                                        name=str(_dl.roi.values),
+                                        legendgroup=str(_dl.roi.values),
+                                        showlegend=sl),
+                              row=1, col=cond)
+            fig.update_traces(orientation='h', side='negative', width=3,
+                              points=False)
+            fig.update_layout(title_text=plot_title,
+                              yaxis={'showticklabels': False,
+                                     'autorange': 'reversed'},
+                              yaxis2={'showticklabels': False,
+                                      'autorange': 'reversed'},
+                              yaxis3={'showticklabels': False,
+                                      'autorange': 'reversed'},
+                              legend_tracegroupgap=4)
+            fig.update_xaxes(range=[rmin, rmax])
+        fig.show()
+    return
+
+
 if __name__ == '__main__':
+    from emosleep.amplitude import compute_amplitude
 
     data_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
     
     data = xr.load_dataarray(data_fname)
-    data = data.rename({'time': 'times'})
-    data = data.mean('trials')
+    # data = data.rename({'time': 'times'})
+    negative = data.sel({'trials': data.condition == 1}).mean('trials')
+    neutral = data.sel({'trials': data.condition == 2}).mean('trials')
+    positive = data.sel({'trials': data.condition == 3}).mean('trials')
+    # data = data.mean('trials')
     
-    plot_rois(data, cmap='RdBu_r')
+    # data = data.mean('time')
+    data = compute_amplitude(data, fmin=0.5, fmax=5.)
+    # data = compute_amplitude(data, fmin=5., fmax=12.)
+    data = data.max('freq')
+    descriptive_violin(data)  # (rois, trials) plus conditions
+    
+    # plot_rois(data, cmap='RdBu_r')
+    # plot_rois(positive - neutral, cmap='Reds')
+    # plot_rois(negative - neutral, cmap='Blues_r')
+    # plot_rois(positive - negative, cmap='RdBu_r')
+    # plot_rois(np.sqrt(positive**2 + negative**2), cmap='RdBu_r')

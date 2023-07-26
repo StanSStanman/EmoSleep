@@ -175,7 +175,8 @@ def compute_inverse_sources(epo_fname, bln_fname, fwd_fname):
     return epochs_stcs
 
 
-def labeling(subject, subjects_dir, epochs_stcs, src_fname, ltc_fname):
+def labeling(subject, subjects_dir, epochs_stcs, src_fname, ltc_fname, 
+             events=None):
     labels = mne.read_labels_from_annot(subject=subject, parc='aparc',
                                         hemi='both', surf_name='white',
                                         subjects_dir=subjects_dir)
@@ -204,7 +205,11 @@ def labeling(subject, subjects_dir, epochs_stcs, src_fname, ltc_fname):
                                         range(epo_tc.shape[-1])],
                                 dims=['roi', 'time', 'trials'])
     
+    if events is not None:
+        epo_label_tc = epo_label_tc.assign_coords(condition=('trials', events))
+    
     epo_label_tc.to_netcdf(ltc_fname)
+    print('Labels time course saved at ', ltc_fname)
     
     return epo_label_tc
     
@@ -217,11 +222,12 @@ if __name__ == '__main__':
     fwd_fname = '/media/jerry/ruggero/EmoSleep/mne/fwd/forward-fwd.fif'
     src_fname = '/media/jerry/ruggero/EmoSleep/mne/src/sources-src.fif'
     ltc_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
+    events = mne.read_epochs(epo_fname).events[:, -1]
     
     stc = compute_lcmv_sources(epo_fname, bln_fname, fwd_fname, events=None)
     # stc = compute_inverse_sources(epo_fname, bln_fname, fwd_fname)
     
-    labeling(subject, subjects_dir, stc, src_fname, ltc_fname)
+    labeling(subject, subjects_dir, stc, src_fname, ltc_fname, events)
     
     # subject = 'fsaverage'
     # subjects_dir = '/home/jerry/freesurfer/EmoSleep'
