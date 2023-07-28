@@ -6,6 +6,25 @@ from emosleep.utils import write_bad_trials, read_bad_trials
 
 def create_epochs(mat_fname, mont_fname, eve_fname, epo_fname, 
                   sfreq=500., tmin=-.5, ev_id=None):
+    """Create epochs from the mat file (sw_prp/signal), it needs the events 
+        file and the montage file to be generated first.
+
+    Args:
+        mat_fname (path_like): Path to the mat file.
+        mont_fname (path_like): Path to the DigMont file.
+        eve_fname (path_like): Path to the event file.
+        epo_fname (path_like): Path were the Epochs file will be saved.
+        sfreq (float, optional): Sampling frequency (in Hz). Defaults to 500..
+        tmin (float, optional): Starting time point in seconds.
+            Defaults to -.5.
+        ev_id (dict|None, optional): Dictionary containing the description of
+            the events contained in the events file. Defaults to None.
+
+    Returns:
+        epochs (instance of mne.Epochs): Epochs object containing all the 
+            relative informations and the data in the form of a 3D matrix of 
+            shape (trials, channels, times).
+    """
     # Retrieving data
     mat = open_matfile(mat_fname)
     data = mat['sw_prp']['signal'][0, 0]  # (ch, tp, tr)
@@ -41,6 +60,24 @@ def create_epochs(mat_fname, mont_fname, eve_fname, epo_fname,
 
 def create_baseline_epochs(mat_fname, mont_fname, eve_fname, epo_fname,
                            sfreq=500., tmin=-2., ev_id=None):
+    """Create epochs from the mat file (data_filt_ep), it needs the events 
+        file and the montage file to be generated first.
+
+    Args:
+        mat_fname (path_like): Path to the mat file.
+        mont_fname (path_like): Path to the DigMont file.
+        eve_fname (path_like): Path to the event file.
+        epo_fname (path_like): Path were the Epochs file will be saved.
+        sfreq (float, optional): Sampling frequency (in Hz). Defaults to 500..
+        tmin (float, optional): Starting time point in seconds.
+            Defaults to -.2.
+        ev_id (dict|None, optional): Dictionary containing the description of
+            the events contained in the events file. Defaults to None.
+    Returns:
+        epochs (instance of mne.Epochs): Epochs object containing all the 
+            relative informations and the data in the form of a 3D matrix of 
+            shape (trials, channels, times).
+    """
     mat = open_matfile(mat_fname)
     data = mat['data_filt_ep']
     data = np.transpose(data, axes=[2, 0, 1])

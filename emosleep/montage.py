@@ -4,6 +4,18 @@ from emosleep.io import open_matfile
 
 
 def compute_montage(mat_fname, mont_fname=False):
+    """Exctract the digital montage of the electrodes from the mat file and
+        put it in a MNE compatible form
+
+    Args:
+        mat_fname (path_like): Path to the matlab file.
+        mont_fname (path_like|False, optional): Path where tha montage file 
+            will be saved, if False the montage will not be saved. 
+            Defaults to False.
+
+    Returns:
+        dig_mont (instance of mne.channels.DigMontage): MNE compatible montage
+    """
     mat = open_matfile(mat_fname)
     ch_pos = {}
     for c in mat['chanlocs'][0, :]:

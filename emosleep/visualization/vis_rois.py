@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import seaborn as ss
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from plotly.colors import n_colors
 from emosleep.visualization.utils import load_aparc, scaling
 
 
@@ -289,6 +288,7 @@ def descriptive_violin(data):
                     sl = False
                 
                 fig.add_trace(go.Violin(x=_dl, line_color=color,
+                                        box_visible=True,
                                         name=str(_dl.roi.values),
                                         legendgroup=str(_dl.roi.values),
                                         showlegend=sl),
@@ -321,7 +321,7 @@ if __name__ == '__main__':
     # data = data.mean('trials')
     
     # data = data.mean('time')
-    data = compute_amplitude(data, fmin=0.5, fmax=5.)
+    data = compute_amplitude(data, fmin=.5, fmax=5.)
     # data = compute_amplitude(data, fmin=5., fmax=12.)
     data = data.max('freq')
     descriptive_violin(data)  # (rois, trials) plus conditions
