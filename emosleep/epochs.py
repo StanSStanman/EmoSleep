@@ -4,7 +4,7 @@ from emosleep.io import open_matfile
 from emosleep.utils import write_bad_trials, read_bad_trials
 
 
-def create_epochs(mat_fname, mont_fname, eve_fname, epo_fname, 
+def create_epochs(mat_fname, mont_fname, eve_fname, epo_fname,
                   sfreq=500., tmin=-.5, ev_id=None):
     """Create epochs from the mat file (sw_prp/signal), it needs the events 
         file and the montage file to be generated first.

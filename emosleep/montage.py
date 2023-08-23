@@ -1,6 +1,7 @@
 import numpy as np
 import mne
 from emosleep.io import open_matfile
+import matplotlib.pyplot as plt
 
 
 def compute_montage(mat_fname, mont_fname=False):
@@ -27,7 +28,8 @@ def compute_montage(mat_fname, mont_fname=False):
             dig_mont.save(mont_fname, overwrite=True)
         else:
             raise ValueError('mont_fname should be False or path-like object')
-    dig_mont.plot()
+    dig_mont.plot(show=False)
+    plt.show(block=True)
     return dig_mont
 
 
