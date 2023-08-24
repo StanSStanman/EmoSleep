@@ -64,15 +64,15 @@ for subj in subjects:
                                       bln_fname, ev_id=ev_id)
     
 fs_dir = op.join(datapath, 'freesurfer')
-mne.datasets.fetch_fsaverage(subjects_dir=datapath, verbose=True)
+mne.datasets.fetch_fsaverage(subjects_dir=fs_dir, verbose=True)
 
 trans_dir = op.join(fs_dir, 'trans')
 if not op.exists(trans_dir):
     os.mkdir(trans_dir)
 trans_fname = op.join(trans_dir, trans_filename)
     
-mne.gui.coregistration(subjects_dir=datapath, subject='fsaverage',
-                       head_high_res=False, show=True, block=True)
+# mne.gui.coregistration(subjects_dir=datapath, subject='fsaverage',
+#                        head_high_res=False, show=True, block=True)
     
 bem_dir = op.join(fs_dir, 'bem')
 if not op.exists(bem_dir):
