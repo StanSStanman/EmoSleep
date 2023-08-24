@@ -29,13 +29,8 @@ def compute_montage(mat_fname, mont_fname=False):
             dig_mont.save(mont_fname, overwrite=True)
         else:
             raise ValueError('mont_fname should be False or path-like object')
-<<<<<<< HEAD
    # dig_mont.plot(show=False, kind='3d')
    # plt.show(block=True)
-=======
-    dig_mont.plot(show=False)
-    plt.show(block=True)
->>>>>>> af32e7186856408000eb0d04c6c6d5b306f1c480
     return dig_mont
 
 
