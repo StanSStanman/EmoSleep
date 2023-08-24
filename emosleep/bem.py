@@ -18,9 +18,6 @@ def compute_bem(subject, sbj_dir, bem_fname):
     return
 
 
-#
-
-
 if __name__ == '__main__':
     
     subject = 'fsaverage'

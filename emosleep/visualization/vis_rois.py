@@ -314,19 +314,20 @@ if __name__ == '__main__':
     data_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
     
     data = xr.load_dataarray(data_fname)
-    # data = data.rename({'time': 'times'})
     negative = data.sel({'trials': data.condition == 1}).mean('trials')
     neutral = data.sel({'trials': data.condition == 2}).mean('trials')
     positive = data.sel({'trials': data.condition == 3}).mean('trials')
-    # data = data.mean('trials')
     
-    # data = data.mean('time')
-    data = compute_amplitude(data, fmin=.5, fmax=5.)
-    # data = compute_amplitude(data, fmin=5., fmax=12.)
-    data = data.max('freq')
-    descriptive_violin(data)  # (rois, trials) plus conditions
     
-    # plot_rois(data, cmap='RdBu_r')
+    # # data = data.mean('time')
+    # data = compute_amplitude(data, fmin=.5, fmax=5.)
+    # # data = compute_amplitude(data, fmin=5., fmax=12.)
+    # data = data.max('freq')
+    # descriptive_violin(data)  # (rois, trials) plus conditions
+    
+    data = data.rename({'time': 'times'})
+    data = data.mean('trials')
+    plot_rois(data, cmap='RdBu_r')
     # plot_rois(positive - neutral, cmap='Reds')
     # plot_rois(negative - neutral, cmap='Blues_r')
     # plot_rois(positive - negative, cmap='RdBu_r')

@@ -2,7 +2,6 @@ import numpy as np
 import mne
 import matplotlib.pyplot as plt
 from emosleep.io import open_matfile
-import matplotlib.pyplot as plt
 
 
 def compute_montage(mat_fname, mont_fname=False):
@@ -18,6 +17,7 @@ def compute_montage(mat_fname, mont_fname=False):
     Returns:
         dig_mont (instance of mne.channels.DigMontage): MNE compatible montage
     """
+    
     mat = open_matfile(mat_fname)
     ch_pos = {}
     for c in mat['chanlocs'][0, :]:
@@ -29,8 +29,8 @@ def compute_montage(mat_fname, mont_fname=False):
             dig_mont.save(mont_fname, overwrite=True)
         else:
             raise ValueError('mont_fname should be False or path-like object')
-   # dig_mont.plot(show=False, kind='3d')
-   # plt.show(block=True)
+    # dig_mont.plot(show=False, kind='3d')
+    # plt.show(block=True)
     return dig_mont
 
 
