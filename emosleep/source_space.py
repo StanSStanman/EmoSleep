@@ -24,4 +24,4 @@ if __name__ == '__main__':
     subjects_dir = '/home/jerry/freesurfer/EmoSleep'
     src_fname = '/media/jerry/ruggero/EmoSleep/mne/src/sources-src.fif'
     
-    compute_source_space(subject, subjects_dir, src_fname, spacing='oct5')
+    compute_source_space(subject, subjects_dir, src_fname, spacing='oct6')

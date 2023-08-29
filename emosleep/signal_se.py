@@ -224,8 +224,8 @@ if __name__ == '__main__':
     ltc_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
     events = mne.read_epochs(epo_fname).events[:, -1]
     
-    stc = compute_lcmv_sources(epo_fname, bln_fname, fwd_fname, events=None)
-    # stc = compute_inverse_sources(epo_fname, bln_fname, fwd_fname)
+    # stc = compute_lcmv_sources(epo_fname, bln_fname, fwd_fname, events=None)
+    stc = compute_inverse_sources(epo_fname, bln_fname, fwd_fname)
     
     labeling(subject, subjects_dir, stc, src_fname, ltc_fname, events)
     

@@ -314,9 +314,9 @@ if __name__ == '__main__':
     data_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
     
     data = xr.load_dataarray(data_fname)
-    negative = data.sel({'trials': data.condition == 1}).mean('trials')
-    neutral = data.sel({'trials': data.condition == 2}).mean('trials')
-    positive = data.sel({'trials': data.condition == 3}).mean('trials')
+    # negative = data.sel({'trials': data.condition == 1}).mean('trials')
+    # neutral = data.sel({'trials': data.condition == 2}).mean('trials')
+    # positive = data.sel({'trials': data.condition == 3}).mean('trials')
     
     
     # # data = data.mean('time')
