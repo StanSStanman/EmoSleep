@@ -7,6 +7,8 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from emosleep.visualization.utils import load_aparc, scaling
 
+ss.set_context("talk")
+
 
 def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
               cmap='hot_r', title=None, vlines=None, brain=False):
@@ -144,7 +146,7 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
             # TODO put a small colorbar aside
             # ma_brain = plot_vep_brain(data, ax=lbr)
 
-            lh.pcolormesh(data.times, data.roi, data)
+            lh.pcolormesh(data.times, data.roi, data, rasterized=True)
         else:
             fig, lh = plt.subplots(1, 1, figsize=(w, scaling(h)))
 
@@ -172,7 +174,7 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
         if mode == 'single':
             ss.heatmap(_data.to_pandas(), yticklabels=True, xticklabels=False,
                        vmin=vmin, vmax=vmax, cmap=cmap, ax=lh,
-                       zorder=0)
+                       zorder=0, rasterized=True)
 
             for k, kw in vlines.items():
                 _k = np.where(data.times.values == k)[0][0]
@@ -188,7 +190,7 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
         elif mode == 'double' or mode == 'bordel':
             ss.heatmap(_data.to_pandas(), yticklabels=True, xticklabels=False,
                        vmin=vmin, vmax=vmax, cmap=cmap, ax=lh,
-                       cbar=False, zorder=0)
+                       cbar=False, zorder=0, rasterized=True)
 
             for k, kw in vlines.items():
                 _k = np.where(data.times.values == k)[0][0]
@@ -210,7 +212,7 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
 
             ss.heatmap(_data.to_pandas(), yticklabels=True, xticklabels=False,
                        vmin=vmin, vmax=vmax, cmap=cmap, ax=rh,
-                       cbar=False, zorder=0)
+                       cbar=False, zorder=0, rasterized=True)
 
             for k, kw in vlines.items():
                 _k = np.where(data.times.values == k)[0][0]
@@ -219,11 +221,11 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
             rh.set_xticks(time_ticks)
             rh.set_xticklabels(tp, rotation='horizontal')
             rh.set_yticklabels(_data.roi.values, ha='center',
-                               position=(-.17, -.50))
+                               position=(-.23, -.50), weight='bold')
             rh.tick_params(axis='y', which='major', labelsize=9)
             rh.tick_params(axis='y', which='minor', labelsize=9)
             rh.tick_params(axis='y', bottom=True, top=False, left=True,
-                           right=False, direction="out", length=3, width=1.5)
+                           right=False, direction="out", length=3, width=1)
             rh.yaxis.set_label_text('')
 
             for ytl, col in zip(rh.get_yticklabels(), ordered_labels['color']):
@@ -242,8 +244,8 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
 
     # plt.text(-45, -60, title)
     plt.figtext(0.06, 0.04, title, ha="center", fontsize=16,
-                bbox={"facecolor": "white", "alpha": 0.5, "pad": 5})
-    plt.show()
+                bbox={"facecolor": "white", "alpha": 0.5, "pad": 5}, weight='bold')
+    # plt.show()
 
     return fig
 
@@ -252,6 +254,7 @@ def descriptive_violin(data):
     # same x ranges for the plot
     rmin, rmax = data.min() - .5, data.max() + .5
     # loop over left and right
+    figs = []
     hemi = ['lh', 'rh']
     for h in hemi:
         h_lab = [l for l in data.roi.values if l.endswith(h)]
@@ -304,31 +307,106 @@ def descriptive_violin(data):
                                       'autorange': 'reversed'},
                               legend_tracegroupgap=4)
             fig.update_xaxes(range=[rmin, rmax])
-        fig.show()
-    return
+        figs.append(fig)
+        # fig.show()
+    return figs
 
 
 if __name__ == '__main__':
+    import os.path as op
     from emosleep.amplitude import compute_amplitude
 
-    data_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
+    ### TESTING PURPOSES ###
+    # data_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
     
-    data = xr.load_dataarray(data_fname)
-    negative = data.sel({'trials': data.condition == 1}).mean('trials')
-    neutral = data.sel({'trials': data.condition == 2}).mean('trials')
-    positive = data.sel({'trials': data.condition == 3}).mean('trials')
+    # data = xr.load_dataarray(data_fname)
+    # negative = data.sel({'trials': data.condition == 1}).mean('trials')
+    # neutral = data.sel({'trials': data.condition == 2}).mean('trials')
+    # positive = data.sel({'trials': data.condition == 3}).mean('trials')
     
     
-    # # data = data.mean('time')
-    # data = compute_amplitude(data, fmin=.5, fmax=5.)
-    # # data = compute_amplitude(data, fmin=5., fmax=12.)
-    # data = data.max('freq')
-    # descriptive_violin(data)  # (rois, trials) plus conditions
+    # # # data = data.mean('time')
+    # # data = compute_amplitude(data, fmin=.5, fmax=5.)
+    # # # data = compute_amplitude(data, fmin=5., fmax=12.)
+    # # data = data.max('freq')
+    # # descriptive_violin(data)  # (rois, trials) plus conditions
     
-    data = data.rename({'time': 'times'})
-    data = data.mean('trials')
-    plot_rois(data, cmap='RdBu_r')
-    # plot_rois(positive - neutral, cmap='Reds')
-    # plot_rois(negative - neutral, cmap='Blues_r')
-    # plot_rois(positive - negative, cmap='RdBu_r')
-    # plot_rois(np.sqrt(positive**2 + negative**2), cmap='RdBu_r')
+    # data = data.rename({'time': 'times'})
+    # data = data.mean('trials')
+    # plot_rois(data, cmap='RdBu_r')
+    # # plot_rois(positive - neutral, cmap='Reds')
+    # # plot_rois(negative - neutral, cmap='Blues_r')
+    # # plot_rois(positive - negative, cmap='RdBu_r')
+    # # plot_rois(np.sqrt(positive**2 + negative**2), cmap='RdBu_r')
+    #######################
+
+    datapath = '/Disk2/EmoSleep/derivatives/'
+    subjects = ['sub-01', 'sub-02', 'sub-03', 'sub-04', 'sub-05', 
+                'sub-06', 'sub-07', 'sub-10', 'sub-11', 'sub-12', 
+                'sub-14', 'sub-15', 'sub-16', 'sub-17', 'sub-19', 
+                'sub-22', 'sub-23', 'sub-24', 'sub-25', 'sub-26', 
+                'sub-27', 'sub-28', 'sub-29', 'sub-30', 'sub-32']
+    # subjects = ['sub-07']
+    ses = '01'
+
+    dest_dir = '/Disk2/EmoSleep/derivatives/results/labels_time_course'
+
+    ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_ltc.nc')
+    #######################
+
+    # all_sbjs = []
+    # for sbj in subjects:
+    #     data_fname = ltc_fname.format(sbj, ses)
+    #     data = xr.load_dataarray(data_fname)
+    #     data = data.rename({'time': 'times'})
+    #     all_sbjs.append(data)
+    # all_sbjs = xr.concat(all_sbjs, 'trials')
+    # all_sbjs = all_sbjs.mean('trials')
+    # fig = plot_rois(all_sbjs, title='subs avg', cmap='RdBu_r')
+    # # plt.savefig(op.join(dest_dir, 'subjects_average_all_trials'), format='png')
+
+    # for sbj in subjects:
+    #     data_fname = ltc_fname.format(sbj, ses)
+    #     data = xr.load_dataarray(data_fname)
+    #     data = data.rename({'time': 'times'})
+    #     data = data.mean('trials')
+    #     fig = plot_rois(data, title=sbj, cmap='RdBu_r')
+    #     # plt.savefig(op.join(dest_dir, '{0}_all_trials'.format(sbj)), format='png')
+
+    # conditions = {'neg_trials': 1, 'neu_trials': 2, 'pos_trials': 3}
+    # for c in conditions.keys():
+    #     all_sbjs = []
+    #     for sbj in subjects:
+    #         data_fname = ltc_fname.format(sbj, ses)
+    #         data = xr.load_dataarray(data_fname)
+    #         data = data.rename({'time': 'times'})
+    #         data = data.sel({'trials': data.condition == conditions[c]})
+    #         all_sbjs.append(data)
+    #     all_sbjs = xr.concat(all_sbjs, 'trials')
+    #     all_sbjs = all_sbjs.mean('trials')
+    #     fig = plot_rois(all_sbjs, title='subs avg', cmap='RdBu_r')
+    #     # plt.savefig(op.join(dest_dir, 'subjects_average_{0}'.format(c)), format='png')
+
+    #     for sbj in subjects:
+    #         data_fname = ltc_fname.format(sbj, ses)
+    #         data = xr.load_dataarray(data_fname)
+    #         data = data.rename({'time': 'times'})
+    #         data = data.sel({'trials': data.condition == conditions[c]})
+    #         data = data.mean('trials')
+    #         fig = plot_rois(data, title=sbj, cmap='RdBu_r')
+    #         # plt.savefig(op.join(dest_dir, '{0}_{1}'.format(sbj, c)), format='png')
+    #######################
+
+    all_sbjs = []
+    for sbj in subjects:
+        data_fname = ltc_fname.format(sbj, ses)
+        data = xr.load_dataarray(data_fname)
+        data = data.rename({'time': 'times'})
+        data = data.sel({'times': slice(-.25, .25)})
+        all_sbjs.append(data)
+    all_sbjs = xr.concat(all_sbjs, 'trials')
+    all_sbjs = all_sbjs.mean('times')
+    figs = descriptive_violin(all_sbjs)
+    # plt.savefig(op.join(dest_dir, 'subjects_average_all_trials'), format='png')
+    figs[0].write_html(op.join(dest_dir, 'subjects_violins_all_trials_lh'))
+    figs[1].write_html(op.join(dest_dir, 'subjects_violins_all_trials_rh'))
