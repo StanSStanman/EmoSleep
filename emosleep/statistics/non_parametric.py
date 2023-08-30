@@ -34,6 +34,10 @@ if __name__ == '__main__':
     # y = get_data_condition(data, 2)
     # summary = stats_two_conditions(x, y, scipy.stats.ttest_ind)
     # print(summary)
+
+    # test = scipy.stats.ttest_ind
+    # test = scipy.stats.ranksums
+    test = scipy.stats.mannwhitneyu
     
     datapath = '/Disk2/EmoSleep/derivatives/'
     subjects = ['sub-01', 'sub-02', 'sub-03', 'sub-04', 'sub-05', 
@@ -41,7 +45,7 @@ if __name__ == '__main__':
                 'sub-14', 'sub-15', 'sub-16', 'sub-17', 'sub-19', 
                 'sub-22', 'sub-23', 'sub-24', 'sub-25', 'sub-26', 
                 'sub-27', 'sub-28', 'sub-29', 'sub-30', 'sub-32']
-    subjects = ['sub-03']
+    # subjects = ['sub-03']
     ses = '01'
 
     dest_dir = '/Disk2/EmoSleep/derivatives/results/statistics'
@@ -52,13 +56,14 @@ if __name__ == '__main__':
     for sbj in subjects:
         data_fname = ltc_fname.format(sbj, ses)
         data = xr.load_dataarray(data_fname)
-        data = data.sel({'times': slice(-.25, .25)})
+        # data = data.sel({'times': slice(-.25, .25)})
         all_sbjs.append(data)
     all_sbjs = xr.concat(all_sbjs, 'trials')
-    # all_sbjs = all_sbjs.rename({'time': 'times'})
     x = get_data_condition(all_sbjs, 1)
     y = get_data_condition(all_sbjs, 2)
-    summary = stats_two_conditions(x, y, scipy.stats.ttest_ind)
+    summary = stats_two_conditions(x, y, test)
+
+    all_sbjs = all_sbjs.rename({'time': 'times'})
     summary = summary.rename({'time': 'times'})
     
     fig = plot_rois(summary.statistic, cmap='viridis')
@@ -66,3 +71,9 @@ if __name__ == '__main__':
     
     fig = plot_rois(summary.pvalue)
     plt.savefig(op.join(dest_dir, 'subjects_pvals'), format='png')
+
+    fig = plot_rois(all_sbjs.mean('trials'), pvals=summary.pvalue, threshold=0.05, cmap='viridis')
+    plt.savefig(op.join(dest_dir, 'subjects_pvals_on_data'), format='png')
+
+    fig = plot_rois(summary.pvalue, pvals=summary.pvalue, cmap='inferno')
+    plt.savefig(op.join(dest_dir, 'subjects_pvals_thresholded'), format='png')
