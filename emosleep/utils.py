@@ -1,6 +1,8 @@
 import os
 import os.path as op
 import json
+import numpy as np
+import xarray as xr
 
 
 def write_bad_trials(epo_fname, bad_trials, bad_fname='bad_trials.json'):
@@ -35,3 +37,18 @@ def read_bad_trials(epo_fname, bad_fname='bad_trials.json'):
     with open(op.join(epo_dir, bad_fname), 'r') as f:
         bad_t = json.load(f)
     return bad_t
+
+
+def get_peaks(data, dim):
+    maxs = data.max(dim).values
+    mins = data.min(dim).values
+
+    pks = np.zeros_like(maxs)
+
+    pks[abs(mins)>maxs] = mins[abs(mins)>maxs]
+    pks[abs(mins)<maxs] = maxs[abs(mins)<maxs]
+
+    data = data.max(dim)
+    data.values = pks
+
+    return data

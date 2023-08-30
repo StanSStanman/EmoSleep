@@ -6,6 +6,7 @@ import seaborn as ss
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from emosleep.visualization.utils import load_aparc, scaling
+from emosleep.utils import get_peaks
 
 ss.set_context("talk")
 
@@ -346,7 +347,7 @@ if __name__ == '__main__':
                 'sub-14', 'sub-15', 'sub-16', 'sub-17', 'sub-19', 
                 'sub-22', 'sub-23', 'sub-24', 'sub-25', 'sub-26', 
                 'sub-27', 'sub-28', 'sub-29', 'sub-30', 'sub-32']
-    # subjects = ['sub-07']
+    subjects = ['sub-03']
     ses = '01'
 
     dest_dir = '/Disk2/EmoSleep/derivatives/results/labels_time_course'
@@ -405,8 +406,11 @@ if __name__ == '__main__':
         data = data.sel({'times': slice(-.25, .25)})
         all_sbjs.append(data)
     all_sbjs = xr.concat(all_sbjs, 'trials')
-    all_sbjs = all_sbjs.mean('times')
+    all_sbjs = get_peaks(all_sbjs, 'times')
+    # all_sbjs = abs(all_sbjs).max('times')
     figs = descriptive_violin(all_sbjs)
     # plt.savefig(op.join(dest_dir, 'subjects_average_all_trials'), format='png')
-    figs[0].write_html(op.join(dest_dir, 'subjects_violins_all_trials_lh'))
-    figs[1].write_html(op.join(dest_dir, 'subjects_violins_all_trials_rh'))
+    figs[0].write_html(op.join(dest_dir, 'subjects_violins_all_trials_max_lh'))
+    figs[1].write_html(op.join(dest_dir, 'subjects_violins_all_trials_max_rh'))
+
+    
