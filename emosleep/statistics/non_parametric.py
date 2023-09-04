@@ -105,6 +105,9 @@ if __name__ == '__main__':
     fig = plot_rois(summary.pvalue, pvals=summary.pvalue, threshold=0.05, cmap='inferno')
     plt.savefig(op.join(dest_dir, 'subjects_pvals_thresholded'), format='png')
 
+    fig = plot_rois(summary.corr_pval, pvals=summary.corr_pval, threshold=0.05, cmap='inferno')
+    plt.savefig(op.join(dest_dir, 'subjects_corrected_pvals_thresholded'), format='png')
+
     ########## averaged on time and within condition
     # x, y = [], []
     # for sbj in subjects:
