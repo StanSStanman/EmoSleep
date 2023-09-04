@@ -1,4 +1,5 @@
 import xarray as xr
+from emosleep.statistics.corrections import fdr_correction
 
 
 def get_data_condition(data, condition):
@@ -69,46 +70,52 @@ if __name__ == '__main__':
     # # summary = summary.rename({'time': 'times'})
 
     ########## averaged within conditions
-    # x, y = [], []
-    # for sbj in subjects:
-    #     data_fname = ltc_fname.format(sbj, ses)
-    #     data = xr.load_dataarray(data_fname)
-    #     # data = data.sel({'times': slice(-.25, .25)})
-    #     x.append(get_data_condition(data, 1).mean('trials', keepdims=True))
-    #     y.append(get_data_condition(data, 2).mean('trials', keepdims=True))
-    #     # all_sbjs.append(data)
-    # # all_sbjs = xr.concat(all_sbjs, 'trials')
-    # x = xr.concat(x, 'trials')
-    # y = xr.concat(y, 'trials')
-    # summary = stats_two_conditions(x, y, test)
-
-    ########## Plots
-    # # all_sbjs = all_sbjs.rename({'time': 'times'})
-    # summary = summary.rename({'time': 'times'})
-    
-    # fig = plot_rois(summary.statistic, cmap='viridis')
-    # plt.savefig(op.join(dest_dir, 'subjects_statistics'), format='png')
-    
-    # fig = plot_rois(summary.pvalue)
-    # plt.savefig(op.join(dest_dir, 'subjects_pvals'), format='png')
-
-    # # fig = plot_rois(all_sbjs.mean('trials'), pvals=summary.pvalue, threshold=0.05, cmap='viridis')
-    # # plt.savefig(op.join(dest_dir, 'subjects_pvals_on_data'), format='png')
-
-    # fig = plot_rois(summary.pvalue, pvals=summary.pvalue, threshold=0.05, cmap='inferno')
-    # plt.savefig(op.join(dest_dir, 'subjects_pvals_thresholded'), format='png')
-
-    ########## averaged on time and within condition
     x, y = [], []
     for sbj in subjects:
         data_fname = ltc_fname.format(sbj, ses)
         data = xr.load_dataarray(data_fname)
-        data = data.sel({'time': slice(-.04, .04)})
-        data = data.mean('time', keepdims=True)
+        # data = data.sel({'times': slice(-.25, .25)})
         x.append(get_data_condition(data, 1).mean('trials', keepdims=True))
         y.append(get_data_condition(data, 2).mean('trials', keepdims=True))
+        # all_sbjs.append(data)
+    # all_sbjs = xr.concat(all_sbjs, 'trials')
     x = xr.concat(x, 'trials')
     y = xr.concat(y, 'trials')
     summary = stats_two_conditions(x, y, test)
+    
+    ########## pvals correction
+    summary, _ = fdr_correction(summary)
 
-    scatter_rois(summary.pvalue*68)
+    ########## Plots
+    # all_sbjs = all_sbjs.rename({'time': 'times'})
+    summary = summary.rename({'time': 'times'})
+    
+    fig = plot_rois(summary.statistic, cmap='viridis')
+    plt.savefig(op.join(dest_dir, 'subjects_statistics'), format='png')
+    
+    fig = plot_rois(summary.pvalue)
+    plt.savefig(op.join(dest_dir, 'subjects_pvals'), format='png')
+    
+    fig = plot_rois(summary.corr_pval)
+    plt.savefig(op.join(dest_dir, 'subjects_corrected_pvals'), format='png')
+
+    # fig = plot_rois(all_sbjs.mean('trials'), pvals=summary.pvalue, threshold=0.05, cmap='viridis')
+    # plt.savefig(op.join(dest_dir, 'subjects_pvals_on_data'), format='png')
+
+    fig = plot_rois(summary.pvalue, pvals=summary.pvalue, threshold=0.05, cmap='inferno')
+    plt.savefig(op.join(dest_dir, 'subjects_pvals_thresholded'), format='png')
+
+    ########## averaged on time and within condition
+    # x, y = [], []
+    # for sbj in subjects:
+    #     data_fname = ltc_fname.format(sbj, ses)
+    #     data = xr.load_dataarray(data_fname)
+    #     data = data.sel({'time': slice(-.04, .04)})
+    #     data = data.mean('time', keepdims=True)
+    #     x.append(get_data_condition(data, 1).mean('trials', keepdims=True))
+    #     y.append(get_data_condition(data, 2).mean('trials', keepdims=True))
+    # x = xr.concat(x, 'trials')
+    # y = xr.concat(y, 'trials')
+    # summary = stats_two_conditions(x, y, test)
+
+    # scatter_rois(summary.pvalue*68)
