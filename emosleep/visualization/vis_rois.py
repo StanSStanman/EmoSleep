@@ -270,7 +270,7 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
     # plt.text(-45, -60, title)
     plt.figtext(0.06, 0.04, title, ha="center", fontsize=16,
                 bbox={"facecolor": "white", "alpha": 0.5, "pad": 5}, weight='bold')
-    plt.show()
+    # plt.show()
 
     return fig
 
