@@ -12,7 +12,7 @@ ss.set_context("talk")
 
 
 def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
-              cmap='hot_r', title=None, vlines=None, brain=False):
+              cmap='hot_r', alpha=.3, title=None, vlines=None, brain=False):
     
     # check that data is a 2D DataArray with the correct name of dims
     if isinstance(data, xr.DataArray):
@@ -38,6 +38,9 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
     else:
         assert pvals is None, ValueError('pvalues can be of type None or '
                                          'xarray.DataArray')
+        
+    if pvals is None:
+        alpha = 1.
 
     # play with rois
     # standardizing names
@@ -113,7 +116,7 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
     # picking data on p-values threshold
     if pvals is not None:
         pvals = pvals.fillna(1.)
-        data = xr.where(pvals >= threshold, np.nan, data)
+        pv_data = xr.where(pvals >= threshold, np.nan, data)
 
     # get colorbar limits
     if isinstance(contrast, float):
@@ -171,11 +174,22 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
         _data['roi'] = _lh
         _data = _data.sel({'roi': ordered_labels['roi']})
         _data['roi'] = ordered_labels['label']
+        
+        if pvals is not None:
+            _pv_data = pv_data.sel({'roi': lh_r})
+            _pv_data['roi'] = _lh
+            _pv_data = _pv_data.sel({'roi': ordered_labels['roi']})
+            _pv_data['roi'] = ordered_labels['label']
 
         if mode == 'single':
             ss.heatmap(_data.to_pandas(), yticklabels=True, xticklabels=False,
                        vmin=vmin, vmax=vmax, cmap=cmap, ax=lh,
-                       zorder=0, rasterized=True)
+                       zorder=0, rasterized=True, alpha=alpha)
+            
+            if pvals is not None:
+                ss.heatmap(_pv_data.to_pandas(), yticklabels=True, 
+                           xticklabels=False, vmin=vmin, vmax=vmax, cmap=cmap, 
+                           ax=lh, zorder=0, rasterized=True)
 
             for k, kw in vlines.items():
                 _k = np.where(data.times.values == k)[0][0]
@@ -191,7 +205,12 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
         elif mode == 'double' or mode == 'bordel':
             ss.heatmap(_data.to_pandas(), yticklabels=True, xticklabels=False,
                        vmin=vmin, vmax=vmax, cmap=cmap, ax=lh,
-                       cbar=False, zorder=0, rasterized=True)
+                       cbar=False, zorder=0, rasterized=True, alpha=alpha)
+            
+            if pvals is not None:
+                ss.heatmap(_pv_data.to_pandas(), yticklabels=True, 
+                           xticklabels=False, vmin=vmin, vmax=vmax, cmap=cmap, 
+                           ax=lh, cbar=False, zorder=0, rasterized=True)
 
             for k, kw in vlines.items():
                 _k = np.where(data.times.values == k)[0][0]
@@ -213,7 +232,12 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
 
             ss.heatmap(_data.to_pandas(), yticklabels=True, xticklabels=False,
                        vmin=vmin, vmax=vmax, cmap=cmap, ax=rh,
-                       cbar=False, zorder=0, rasterized=True)
+                       cbar=False, zorder=0, rasterized=True, alpha=alpha)
+            
+            if pvals is not None:
+                ss.heatmap(_pv_data.to_pandas(), yticklabels=True, 
+                           xticklabels=False, vmin=vmin, vmax=vmax, cmap=cmap, 
+                           ax=rh, cbar=False, zorder=0, rasterized=True)
 
             for k, kw in vlines.items():
                 _k = np.where(data.times.values == k)[0][0]
@@ -246,7 +270,7 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
     # plt.text(-45, -60, title)
     plt.figtext(0.06, 0.04, title, ha="center", fontsize=16,
                 bbox={"facecolor": "white", "alpha": 0.5, "pad": 5}, weight='bold')
-    # plt.show()
+    plt.show()
 
     return fig
 
@@ -394,7 +418,7 @@ if __name__ == '__main__':
     
     # data = data.rename({'time': 'times'})
     # data = data.mean('trials')
-    # plot_rois(data, cmap='RdBu_r')
+    # plot_rois(data, pvals=None, cmap='RdBu_r')
     # # plot_rois(positive - neutral, cmap='Reds')
     # # plot_rois(negative - neutral, cmap='Blues_r')
     # # plot_rois(positive - negative, cmap='RdBu_r')
@@ -458,19 +482,19 @@ if __name__ == '__main__':
     #         # plt.savefig(op.join(dest_dir, '{0}_{1}'.format(sbj, c)), format='png')
     #######################
 
-    all_sbjs = []
-    for sbj in subjects:
-        data_fname = ltc_fname.format(sbj, ses)
-        data = xr.load_dataarray(data_fname)
-        data = data.rename({'time': 'times'})
-        data = data.sel({'times': slice(-.25, .25)})
-        all_sbjs.append(data)
-    all_sbjs = xr.concat(all_sbjs, 'trials')
-    all_sbjs = get_peaks(all_sbjs, 'times')
-    # all_sbjs = abs(all_sbjs).max('times')
-    figs = descriptive_violin(all_sbjs)
-    # plt.savefig(op.join(dest_dir, 'subjects_average_all_trials'), format='png')
-    figs[0].write_html(op.join(dest_dir, 'subjects_violins_all_trials_max_lh'))
-    figs[1].write_html(op.join(dest_dir, 'subjects_violins_all_trials_max_rh'))
+    # all_sbjs = []
+    # for sbj in subjects:
+    #     data_fname = ltc_fname.format(sbj, ses)
+    #     data = xr.load_dataarray(data_fname)
+    #     data = data.rename({'time': 'times'})
+    #     data = data.sel({'times': slice(-.25, .25)})
+    #     all_sbjs.append(data)
+    # all_sbjs = xr.concat(all_sbjs, 'trials')
+    # all_sbjs = get_peaks(all_sbjs, 'times')
+    # # all_sbjs = abs(all_sbjs).max('times')
+    # figs = descriptive_violin(all_sbjs)
+    # # plt.savefig(op.join(dest_dir, 'subjects_average_all_trials'), format='png')
+    # figs[0].write_html(op.join(dest_dir, 'subjects_violins_all_trials_max_lh'))
+    # figs[1].write_html(op.join(dest_dir, 'subjects_violins_all_trials_max_rh'))
 
     
