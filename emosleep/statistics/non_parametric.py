@@ -27,7 +27,7 @@ if __name__ == '__main__':
     import scipy
     import os.path as op
     import matplotlib.pyplot as plt
-    from emosleep.visualization.vis_rois import plot_rois
+    from emosleep.visualization.vis_rois import plot_rois, scatter_rois
     # data_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
     # data = xr.load_dataarray(data_fname)
     # x = get_data_condition(data, 1)
@@ -37,7 +37,8 @@ if __name__ == '__main__':
 
     # test = scipy.stats.ttest_ind
     # test = scipy.stats.ranksums
-    test = scipy.stats.mannwhitneyu
+    # test = scipy.stats.mannwhitneyu
+    test = scipy.stats.wilcoxon
     
     datapath = '/Disk2/EmoSleep/derivatives/'
     subjects = ['sub-01', 'sub-02', 'sub-03', 'sub-04', 'sub-05', 
@@ -52,28 +53,62 @@ if __name__ == '__main__':
 
     ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_ltc.nc')
     
-    all_sbjs = []
+    ########## FFX
+    # all_sbjs = []
+    # for sbj in subjects:
+    #     data_fname = ltc_fname.format(sbj, ses)
+    #     data = xr.load_dataarray(data_fname)
+    #     # data = data.sel({'times': slice(-.25, .25)})
+    #     all_sbjs.append(data)
+    # all_sbjs = xr.concat(all_sbjs, 'trials')
+    # x = get_data_condition(all_sbjs, 1)
+    # y = get_data_condition(all_sbjs, 2)
+    # summary = stats_two_conditions(x, y, test)
+
+    # all_sbjs = all_sbjs.rename({'time': 'times'})
+    # # summary = summary.rename({'time': 'times'})
+
+    ########## averaged within conditions
+    # x, y = [], []
+    # for sbj in subjects:
+    #     data_fname = ltc_fname.format(sbj, ses)
+    #     data = xr.load_dataarray(data_fname)
+    #     # data = data.sel({'times': slice(-.25, .25)})
+    #     x.append(get_data_condition(data, 1).mean('trials', keepdims=True))
+    #     y.append(get_data_condition(data, 2).mean('trials', keepdims=True))
+    #     # all_sbjs.append(data)
+    # # all_sbjs = xr.concat(all_sbjs, 'trials')
+    # x = xr.concat(x, 'trials')
+    # y = xr.concat(y, 'trials')
+    # summary = stats_two_conditions(x, y, test)
+
+    ########## Plots
+    # # all_sbjs = all_sbjs.rename({'time': 'times'})
+    # summary = summary.rename({'time': 'times'})
+    
+    # fig = plot_rois(summary.statistic, cmap='viridis')
+    # plt.savefig(op.join(dest_dir, 'subjects_statistics'), format='png')
+    
+    # fig = plot_rois(summary.pvalue)
+    # plt.savefig(op.join(dest_dir, 'subjects_pvals'), format='png')
+
+    # # fig = plot_rois(all_sbjs.mean('trials'), pvals=summary.pvalue, threshold=0.05, cmap='viridis')
+    # # plt.savefig(op.join(dest_dir, 'subjects_pvals_on_data'), format='png')
+
+    # fig = plot_rois(summary.pvalue, pvals=summary.pvalue, threshold=0.05, cmap='inferno')
+    # plt.savefig(op.join(dest_dir, 'subjects_pvals_thresholded'), format='png')
+
+    ########## averaged on time and within condition
+    x, y = [], []
     for sbj in subjects:
         data_fname = ltc_fname.format(sbj, ses)
         data = xr.load_dataarray(data_fname)
-        # data = data.sel({'times': slice(-.25, .25)})
-        all_sbjs.append(data)
-    all_sbjs = xr.concat(all_sbjs, 'trials')
-    x = get_data_condition(all_sbjs, 1)
-    y = get_data_condition(all_sbjs, 2)
+        data = data.sel({'time': slice(-.04, .04)})
+        data = data.mean('time', keepdims=True)
+        x.append(get_data_condition(data, 1).mean('trials', keepdims=True))
+        y.append(get_data_condition(data, 2).mean('trials', keepdims=True))
+    x = xr.concat(x, 'trials')
+    y = xr.concat(y, 'trials')
     summary = stats_two_conditions(x, y, test)
 
-    all_sbjs = all_sbjs.rename({'time': 'times'})
-    summary = summary.rename({'time': 'times'})
-    
-    fig = plot_rois(summary.statistic, cmap='viridis')
-    plt.savefig(op.join(dest_dir, 'subjects_statistics'), format='png')
-    
-    fig = plot_rois(summary.pvalue)
-    plt.savefig(op.join(dest_dir, 'subjects_pvals'), format='png')
-
-    fig = plot_rois(all_sbjs.mean('trials'), pvals=summary.pvalue, threshold=0.05, cmap='viridis')
-    plt.savefig(op.join(dest_dir, 'subjects_pvals_on_data'), format='png')
-
-    fig = plot_rois(summary.pvalue, pvals=summary.pvalue, cmap='inferno')
-    plt.savefig(op.join(dest_dir, 'subjects_pvals_thresholded'), format='png')
+    scatter_rois(summary.pvalue*68)

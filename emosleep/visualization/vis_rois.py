@@ -251,6 +251,66 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
     return fig
 
 
+def scatter_rois(data, threshold=.05):
+    assert isinstance(data, xr.DataArray), ValueError('data should be in'
+                                                      'DataArray format')
+    data_dims = data.coords._names
+    assert ('roi' in data_dims), AssertionError('DataArray must contain '
+                                                'a roi dimension')
+    
+    rois = []
+    for _r in data.roi.values:
+        if _r.startswith('Left-'):
+            _r.replace('Left-', '')
+            _r += '-lh'
+        elif _r.startswith('Right-'):
+            _r.replace('Right-', '')
+            _r += '-rh'
+        rois.append(_r)
+    data['roi'] = rois
+
+    fig, ax = plt.subplots(1, 1, figsize=(16, 9))
+
+    hemi = ['lh', 'rh']
+    for h in hemi:
+        h_lab = [l for l in data.roi.values if l.endswith(h)]
+        abs_lab = [l.replace('-{0}'.format(h), '') for l in h_lab]
+
+        _data = data.sel({'roi': h_lab})
+        _data['roi'] = abs_lab
+
+        ordered_labels = load_aparc(abs_lab)
+        
+        _data = _data.sel({'roi': ordered_labels['roi']})
+        _data['roi'] = ordered_labels['label']
+
+        _data = _data.squeeze()
+        
+        # for dim in data_dims:
+        #     if dim != 'roi':
+        #         _data = _data.mean(dim)
+
+        if h == 'lh':
+            c = 'crimson'
+        elif h == 'rh':
+            c = 'navy'
+        
+        ax.scatter(range(len(_data.roi)), _data.values, c=c, 
+                   alpha=.6, label='{0} hemi'.format(h))
+
+    ax.axhline(threshold, 0, len(_data.roi))
+    ax.set_xticks(range(len(_data.roi)))
+    ax.set_xticklabels(ordered_labels['label'], rotation='vertical', ha='center')
+    ax.tick_params(axis='x', which='major', labelsize=9)
+    ax.tick_params(axis='x', which='minor', labelsize=9)
+
+    plt.legend()
+    plt.tight_layout()
+    plt.show(block=True)
+
+    return fig
+
+
 def descriptive_violin(data):
     # same x ranges for the plot
     rmin, rmax = data.min() - .5, data.max() + .5
