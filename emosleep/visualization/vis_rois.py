@@ -235,8 +235,8 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
                        cbar=False, zorder=0, rasterized=True, alpha=alpha)
             
             if pvals is not None: # new add to check
-                _pv_data = pv_data.sel({'roi': lh_r})
-                _pv_data['roi'] = _lh
+                _pv_data = pv_data.sel({'roi': rh_r})
+                _pv_data['roi'] = _rh
                 _pv_data = _pv_data.sel({'roi': ordered_labels['roi']})
                 _pv_data['roi'] = ordered_labels['label']
                 
