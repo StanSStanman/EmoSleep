@@ -99,7 +99,7 @@ def create_baseline_epochs(mat_fname, mont_fname, eve_fname, epo_fname,
     # Dropping bad trials
     epochs.drop(bad_trials, reason='bad or nans')
     # Cropping data in the baseline period
-    epochs = epochs.crop(-1.5, -.5)
+    epochs = epochs.crop(-1.9, -.9)
     # Save baseline epochs
     epochs.save(fname=epo_fname, overwrite=True)
     # Wanna plot?
