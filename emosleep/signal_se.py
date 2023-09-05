@@ -72,10 +72,18 @@ def compute_lcmv_sources(epo_fname, bln_fname, fwd_fname, events=None):
     # filters = make_lcmv(epochs_ev.info, fwd, data_cov=noise_cov,
     #                     noise_cov=None, reg=0.05, pick_ori='normal',
     #                     reduce_rank=False, inversion='matrix')
+    
+    # Fixed orientation
+    # filters = make_lcmv(epochs_ev.info, fwd, data_cov=covariance,
+    #                     noise_cov=noise_cov, reg=0.05, pick_ori='normal',
+    #                     weight_norm='unit-noise-gain', reduce_rank=False,
+    #                     depth=.8, inversion='matrix')
+    
+    # Free orientation
     filters = make_lcmv(epochs_ev.info, fwd, data_cov=covariance,
                         noise_cov=noise_cov, reg=0.05, pick_ori='normal',
-                        weight_norm='unit-noise-gain', reduce_rank=False,
-                        depth=.8, inversion='matrix')
+                        weight_norm=None, reduce_rank=False,
+                        depth=2, inversion='matrix')
 
     epochs_stcs = apply_lcmv_epochs(epochs_ev, filters, return_generator=True)
 
@@ -146,17 +154,33 @@ def compute_inverse_sources(epo_fname, bln_fname, fwd_fname):
     #                     noise_cov=noise_cov, reg=0.05, pick_ori='normal',
     #                     reduce_rank=False, inversion='matrix')
     
+    # Free orientation, depth weighted
+    # inverse_operator = mne.minimum_norm.make_inverse_operator(epochs_ev.info,
+    #                                                           fwd, covariance,
+    #                                                           fixed=False,
+    #                                                           loose=1.,
+    #                                                           depth=3)
+    
+    # Loose constraint, depth weighted
     inverse_operator = mne.minimum_norm.make_inverse_operator(epochs_ev.info,
                                                               fwd, covariance,
                                                               fixed=False,
-                                                              loose=1.,
-                                                              depth=.8)
+                                                              loose=.2,
+                                                              depth=4)
+    
+    # Fixed constraint, depth weighted
+    # inverse_operator = mne.minimum_norm.make_inverse_operator(epochs_ev.info,
+    #                                                           fwd, covariance,
+    #                                                           fixed=True,
+    #                                                           loose=0.,
+    #                                                           depth=3)
     
     # Signal to noise ratio, one should assume an SNR of 3 for averaged and 1 
     # for non-averaged data
     snr = 1.
     lambda2 = 1. / snr ** 2
     
+    # Free orientation, depth weighted
     epochs_stcs = mne.minimum_norm.apply_inverse_epochs(epochs_ev,
                                                         inverse_operator,
                                                         lambda2=lambda2,
@@ -169,6 +193,20 @@ def compute_inverse_sources(epo_fname, bln_fname, fwd_fname):
                                                         method_params=None,
                                                         use_cps=True,
                                                         verbose=None)
+    
+    # Fixed constraint, depth weighted
+    # epochs_stcs = mne.minimum_norm.apply_inverse_epochs(epochs_ev,
+    #                                                     inverse_operator,
+    #                                                     lambda2=lambda2,
+    #                                                     method='dSPM',
+    #                                                     label=None,
+    #                                                     nave=1,
+    #                                                     pick_ori=None,
+    #                                                     return_generator=False,
+    #                                                     prepared=False,
+    #                                                     method_params=None,
+    #                                                     use_cps=True,
+    #                                                     verbose=None)
 
     # epochs_stcs = apply_lcmv_epochs(epochs_ev, filters, return_generator=True)
 
@@ -197,6 +235,8 @@ def labeling(subject, subjects_dir, epochs_stcs, src_fname, ltc_fname,
     for ep in epochs_stcs:
         labels_tc = ep.extract_label_time_course(labels, sources,
                                                  mode='mean_flip')
+        # labels_tc = ep.extract_label_time_course(labels, sources,
+        #                                          mode='max')
         epo_tc.append(labels_tc)
         
     epo_tc = np.stack(tuple(epo_tc), axis=-1)

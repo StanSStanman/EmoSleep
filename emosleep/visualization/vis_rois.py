@@ -12,7 +12,8 @@ ss.set_context("talk")
 
 
 def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
-              cmap='hot_r', alpha=.3, title=None, vlines=None, brain=False):
+              cmap='hot_r', alpha=.3, title=None, vlines=None, brain=False,
+              show=False):
     
     # check that data is a 2D DataArray with the correct name of dims
     if isinstance(data, xr.DataArray):
@@ -274,8 +275,10 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
 
     # plt.text(-45, -60, title)
     plt.figtext(0.06, 0.04, title, ha="center", fontsize=16,
-                bbox={"facecolor": "white", "alpha": 0.5, "pad": 5}, weight='bold')
-    # plt.show()
+                bbox={"facecolor": "white", "alpha": 0.5, "pad": 5}, 
+                weight='bold')
+    if show:
+        plt.show()
 
     return fig
 
@@ -329,7 +332,8 @@ def scatter_rois(data, threshold=.05):
 
     ax.axhline(threshold, 0, len(_data.roi))
     ax.set_xticks(range(len(_data.roi)))
-    ax.set_xticklabels(ordered_labels['label'], rotation='vertical', ha='center')
+    ax.set_xticklabels(ordered_labels['label'], rotation='vertical', 
+                       ha='center')
     ax.tick_params(axis='x', which='major', labelsize=9)
     ax.tick_params(axis='x', which='minor', labelsize=9)
 
@@ -407,41 +411,41 @@ if __name__ == '__main__':
     from emosleep.amplitude import compute_amplitude
 
     ### TESTING PURPOSES ###
-    # data_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
+    data_fname = '/media/jerry/ruggero/EmoSleep/mne/ltc/label_tc.nc'
     
-    # data = xr.load_dataarray(data_fname)
-    # negative = data.sel({'trials': data.condition == 1}).mean('trials')
-    # neutral = data.sel({'trials': data.condition == 2}).mean('trials')
-    # positive = data.sel({'trials': data.condition == 3}).mean('trials')
+    data = xr.load_dataarray(data_fname)
+    negative = data.sel({'trials': data.condition == 1}).mean('trials')
+    neutral = data.sel({'trials': data.condition == 2}).mean('trials')
+    positive = data.sel({'trials': data.condition == 3}).mean('trials')
     
     
-    # # # data = data.mean('time')
-    # # data = compute_amplitude(data, fmin=.5, fmax=5.)
-    # # # data = compute_amplitude(data, fmin=5., fmax=12.)
-    # # data = data.max('freq')
-    # # descriptive_violin(data)  # (rois, trials) plus conditions
+    # # data = data.mean('time')
+    # data = compute_amplitude(data, fmin=.5, fmax=5.)
+    # # data = compute_amplitude(data, fmin=5., fmax=12.)
+    # data = data.max('freq')
+    # descriptive_violin(data)  # (rois, trials) plus conditions
     
-    # data = data.rename({'time': 'times'})
-    # data = data.mean('trials')
-    # plot_rois(data, pvals=None, cmap='RdBu_r')
-    # # plot_rois(positive - neutral, cmap='Reds')
-    # # plot_rois(negative - neutral, cmap='Blues_r')
-    # # plot_rois(positive - negative, cmap='RdBu_r')
-    # # plot_rois(np.sqrt(positive**2 + negative**2), cmap='RdBu_r')
+    data = data.rename({'time': 'times'})
+    data = data.mean('trials')
+    plot_rois(data, pvals=None, cmap='RdBu_r', show=True)
+    # plot_rois(positive - neutral, cmap='Reds')
+    # plot_rois(negative - neutral, cmap='Blues_r')
+    # plot_rois(positive - negative, cmap='RdBu_r')
+    # plot_rois(np.sqrt(positive**2 + negative**2), cmap='RdBu_r')
     #######################
 
-    datapath = '/Disk2/EmoSleep/derivatives/'
-    subjects = ['sub-01', 'sub-02', 'sub-03', 'sub-04', 'sub-05', 
-                'sub-06', 'sub-07', 'sub-10', 'sub-11', 'sub-12', 
-                'sub-14', 'sub-15', 'sub-16', 'sub-17', 'sub-19', 
-                'sub-22', 'sub-23', 'sub-24', 'sub-25', 'sub-26', 
-                'sub-27', 'sub-28', 'sub-29', 'sub-30', 'sub-32']
-    subjects = ['sub-03']
-    ses = '01'
+    # datapath = '/Disk2/EmoSleep/derivatives/'
+    # subjects = ['sub-01', 'sub-02', 'sub-03', 'sub-04', 'sub-05', 
+    #             'sub-06', 'sub-07', 'sub-10', 'sub-11', 'sub-12', 
+    #             'sub-14', 'sub-15', 'sub-16', 'sub-17', 'sub-19', 
+    #             'sub-22', 'sub-23', 'sub-24', 'sub-25', 'sub-26', 
+    #             'sub-27', 'sub-28', 'sub-29', 'sub-30', 'sub-32']
+    # subjects = ['sub-03']
+    # ses = '01'
 
-    dest_dir = '/Disk2/EmoSleep/derivatives/results/labels_time_course'
+    # dest_dir = '/Disk2/EmoSleep/derivatives/results/labels_time_course'
 
-    ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_ltc.nc')
+    # ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_ltc.nc')
     #######################
 
     # all_sbjs = []
