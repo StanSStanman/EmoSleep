@@ -173,7 +173,7 @@ def compute_inverse_sources(epo_fname, bln_fname, fwd_fname):
     #                                                           fwd, covariance,
     #                                                           fixed=True,
     #                                                           loose=0.,
-    #                                                           depth=3)
+    #                                                           depth=4)
     
     # Signal to noise ratio, one should assume an SNR of 3 for averaged and 1 
     # for non-averaged data
