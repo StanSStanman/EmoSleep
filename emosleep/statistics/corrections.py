@@ -2,11 +2,11 @@ import xarray as xr
 from statsmodels.stats.multitest import fdrcorrection
 
 
-def fdr_correction(summary):
+def fdr_correction(summary, method='indep'):
     pvals = summary.pvalue.values.flatten()
     rej_pv, corr_pv = fdrcorrection(pvals=pvals,
                                     alpha=.05,
-                                    method='indep',
+                                    method=method,
                                     is_sorted=False)
     
     rej_pv = rej_pv.reshape(summary.pvalue.shape)
