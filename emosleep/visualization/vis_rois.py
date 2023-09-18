@@ -278,7 +278,7 @@ def plot_rois(data, pvals=None, threshold=.05, time=None, contrast=.05,
                 bbox={"facecolor": "white", "alpha": 0.5, "pad": 5}, 
                 weight='bold')
     if show:
-        plt.show()
+        plt.show(block=True)
 
     return fig
 
@@ -445,7 +445,7 @@ if __name__ == '__main__':
 
     dest_dir = '/Disk2/EmoSleep/derivatives/results/labels_time_course/070923/dSPM'
 
-    ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_ltc.nc')
+    ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_pre_ltc.nc')
     #######################
 
     all_sbjs = []
@@ -456,18 +456,19 @@ if __name__ == '__main__':
         all_sbjs.append(data)
     all_sbjs = xr.concat(all_sbjs, 'trials')
     all_sbjs = all_sbjs.mean('trials')
-    fig = plot_rois(all_sbjs, title='subs avg', cmap='RdBu_r')
-    plt.savefig(op.join(dest_dir, 'subjects_average_all_trials'), format='png')
+    fig = plot_rois(all_sbjs, title='subs avg', cmap='RdBu_r', show=True)
+    # plt.savefig(op.join(dest_dir, 'subjects_average_all_trials'), format='png')
 
     for sbj in subjects:
         data_fname = ltc_fname.format(sbj, ses)
         data = xr.load_dataarray(data_fname)
         data = data.rename({'time': 'times'})
         data = data.mean('trials')
-        fig = plot_rois(data, title=sbj, cmap='RdBu_r')
-        plt.savefig(op.join(dest_dir, '{0}_all_trials'.format(sbj)), format='png')
+        fig = plot_rois(data, title=sbj, cmap='RdBu_r', show=True)
+        # plt.savefig(op.join(dest_dir, '{0}_all_trials'.format(sbj)), format='png')
 
-    conditions = {'neg_trials': 1, 'neu_trials': 2, 'pos_trials': 3}
+    # conditions = {'neg_trials': 1, 'neu_trials': 2, 'pos_trials': 3}
+    conditions = {'no_kc': 0, 'kc': 1}
     for c in conditions.keys():
         all_sbjs = []
         for sbj in subjects:
@@ -478,8 +479,8 @@ if __name__ == '__main__':
             all_sbjs.append(data)
         all_sbjs = xr.concat(all_sbjs, 'trials')
         all_sbjs = all_sbjs.mean('trials')
-        fig = plot_rois(all_sbjs, title='subs avg', cmap='RdBu_r')
-        plt.savefig(op.join(dest_dir, 'subjects_average_{0}'.format(c)), format='png')
+        fig = plot_rois(all_sbjs, title='subs avg', cmap='RdBu_r', show=True)
+        # plt.savefig(op.join(dest_dir, 'subjects_average_{0}'.format(c)), format='png')
 
         for sbj in subjects:
             data_fname = ltc_fname.format(sbj, ses)
@@ -487,8 +488,8 @@ if __name__ == '__main__':
             data = data.rename({'time': 'times'})
             data = data.sel({'trials': data.condition == conditions[c]})
             data = data.mean('trials')
-            fig = plot_rois(data, title=sbj, cmap='RdBu_r')
-            plt.savefig(op.join(dest_dir, '{0}_{1}'.format(sbj, c)), format='png')
+            fig = plot_rois(data, title=sbj, cmap='RdBu_r', show=True)
+            # plt.savefig(op.join(dest_dir, '{0}_{1}'.format(sbj, c)), format='png')
     #######################
 
     # all_sbjs = []

@@ -52,3 +52,32 @@ def get_peaks(data, dim):
     data.values = pks
 
     return data
+
+
+def z_score(data, twin=None):
+    '''
+    Perform z-score on the 3rd dimension of an array
+    ( y = (x - mean(x)) / std(x) )
+    :param data: np.ndarray | xr.DataArray
+        Data on which perform the z-score, average e standard deviation
+        are computed on the 3rd dimension
+    :return: np.ndarray | xr.DataArray
+        z-scored data
+    '''
+    isinstance(twin, (tuple, type(None)))
+    if twin is None:
+        if isinstance(data, xr.DataArray):
+            data.data = ((data.data - data.data.mean(-1, keepdims=True)) /
+                         data.data.std(-1, keepdims=True))
+        elif isinstance(data, np.ndarray):
+            data = ((data - data.mean(-1, keepdims=True)) /
+                    data.std(-1, keepdims=True))
+    else:
+        if isinstance(data, xr.DataArray):
+            bln = data.sel({'times': slice(*twin)})
+            data.data = ((data.data - bln.data.mean(-1, keepdims=True)) /
+                         bln.data.std(-1, keepdims=True))
+        else:
+            raise ValueError('If twin is specified, data should be an '
+                             'xarray.DataArray with one dim called \'times\'')
+    return data

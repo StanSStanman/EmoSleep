@@ -66,6 +66,7 @@ def create_epochs(mat_fname, mont_fname, eve_fname, epo_fname,
     bad_trials = np.unique(np.sort(np.hstack((post_zeros, pre_nans))))
     # Dropping bads and nans
     pre_epochs.drop(bad_trials, reason='bad or nans')
+    pre_epochs.equalize_event_counts()
     # Save baseline epochs
     pre_epochs.save(fname=epo_fname, overwrite=True)
     # Wanna plot?
