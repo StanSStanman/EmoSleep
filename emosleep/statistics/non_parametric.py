@@ -1,5 +1,6 @@
 import xarray as xr
 from emosleep.statistics.corrections import fdr_correction
+from emosleep.utils import z_score
 
 
 def get_data_condition(data, condition):
@@ -8,6 +9,16 @@ def get_data_condition(data, condition):
         condition = conditions[condition]
     if isinstance(condition, int):
         assert 1 <= condition <= 3, ValueError('condition must be 1, 2 or 3')
+        
+    return data.sel({'trials': data.condition == condition})
+
+
+def get_data_condition_pre(data, condition):
+    conditions = {'no_kc': 0, 'kc': 1}
+    if isinstance(condition, str):
+        condition = conditions[condition]
+    if isinstance(condition, int):
+        assert 0 <= condition <= 1, ValueError('condition must be 1, 2 or 3')
         
     return data.sel({'trials': data.condition == condition})
 
@@ -51,9 +62,9 @@ if __name__ == '__main__':
     # subjects = ['sub-03']
     ses = '01'
 
-    dest_dir = '/Disk2/EmoSleep/derivatives/results/statistics'
+    dest_dir = '/Disk2/EmoSleep/derivatives/results/prestimuli_slow_waves/statistics/180923'
 
-    ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_ltc.nc')
+    ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_pre_ltc.nc')
     
     ########## FFX
     # all_sbjs = []
@@ -76,8 +87,8 @@ if __name__ == '__main__':
     #     data_fname = ltc_fname.format(sbj, ses)
     #     data = xr.load_dataarray(data_fname)
     #     # data = data.sel({'times': slice(-.25, .25)})
-    #     x.append(get_data_condition(data, 3).mean('trials', keepdims=True))
-    #     y.append(get_data_condition(data, 2).mean('trials', keepdims=True))
+    #     x.append(get_data_condition_pre(data, 0).mean('trials', keepdims=True))
+    #     y.append(get_data_condition_pre(data, 1).mean('trials', keepdims=True))
     #     # all_sbjs.append(data)
     # # all_sbjs = xr.concat(all_sbjs, 'trials')
     # x = xr.concat(x, 'trials')
@@ -119,13 +130,26 @@ if __name__ == '__main__':
     for sbj in subjects:
         data_fname = ltc_fname.format(sbj, ses)
         data = xr.load_dataarray(data_fname)
-        data = data.sel({'time': slice(-.04, .04)})
+        data = data.sel({'time': slice(-.02, .02)})
         data = data.mean('time', keepdims=True)
-        x.append(get_data_condition(data, 3).mean('trials', keepdims=True))
-        y.append(get_data_condition(data, 1).mean('trials', keepdims=True))
+        _x = get_data_condition_pre(data, 0)
+        _y = get_data_condition_pre(data, 1)
+        _x = z_score(_x)
+        _y = z_score(_y)
+        x.append(_x.mean('trials', keepdims=True))
+        y.append(_y.mean('trials', keepdims=True))
     x = xr.concat(x, 'trials')
     y = xr.concat(y, 'trials')
     summary = stats_two_conditions(x, y, test)
     summary, _ = fdr_correction(summary)
 
-    scatter_rois(summary.corr_pval)
+    scatter_rois(summary.pvalue)
+
+    difference = x.mean('trials') - y.mean('trials')
+    difference = difference.rename('difference')
+    summary = xr.merge([summary, difference])
+
+    ########## generate csv for Monica
+    import pandas as pd
+    df = summary.to_dataframe(['roi', 'time'])
+    df.to_csv(op.join(dest_dir, 'summary.csv'))
