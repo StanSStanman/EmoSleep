@@ -62,9 +62,9 @@ if __name__ == '__main__':
     # subjects = ['sub-03']
     ses = '01'
 
-    dest_dir = '/Disk2/EmoSleep/derivatives/results/prestimuli_slow_waves/statistics/180923'
+    dest_dir = '/Disk2/EmoSleep/derivatives/results/evoked_k_complexes/statistics/290923'
 
-    ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_pre_ltc.nc')
+    ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_ltc.nc')
     
     ########## FFX
     # all_sbjs = []
@@ -110,7 +110,7 @@ if __name__ == '__main__':
     # fig = plot_rois(summary.pvalue)
     # plt.savefig(op.join(dest_dir, 'subjects_pvals'), format='png')
     
-    # fig = plot_rois(summary.corr_pval)
+    # fig = plot_rois(summary.corr_pval, show=True)
     # plt.savefig(op.join(dest_dir, 'subjects_corrected_pvals'), format='png')
 
     # # fig = plot_rois(all_sbjs.mean('trials'), pvals=summary.pvalue, threshold=0.05, cmap='viridis')
@@ -132,18 +132,18 @@ if __name__ == '__main__':
         data = xr.load_dataarray(data_fname)
         data = data.sel({'time': slice(-.02, .02)})
         data = data.mean('time', keepdims=True)
-        _x = get_data_condition_pre(data, 0)
-        _y = get_data_condition_pre(data, 1)
-        _x = z_score(_x)
-        _y = z_score(_y)
+        _x = get_data_condition(data, 1)
+        _y = get_data_condition(data, 2)
+        # _x = z_score(_x)
+        # _y = z_score(_y)
         x.append(_x.mean('trials', keepdims=True))
         y.append(_y.mean('trials', keepdims=True))
     x = xr.concat(x, 'trials')
     y = xr.concat(y, 'trials')
     summary = stats_two_conditions(x, y, test)
-    summary, _ = fdr_correction(summary)
+    summary, _ = fdr_correction(summary, method='i')
 
-    scatter_rois(summary.pvalue)
+    scatter_rois(summary.corr_pval)
 
     difference = x.mean('trials') - y.mean('trials')
     difference = difference.rename('difference')
