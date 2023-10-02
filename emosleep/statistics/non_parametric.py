@@ -24,7 +24,7 @@ def get_data_condition_pre(data, condition):
 
 
 def stats_two_conditions(x, y, statfunc):
-    res = statfunc(x.values, y.values, axis=-1, alternative='greater')
+    res = statfunc(x.values, y.values, axis=-1)
     stat = xr.DataArray(res.statistic, coords=[x.roi.values, x.time.values],
                         dims=['roi', 'time'], name='statistic')
     pval = xr.DataArray(res.pvalue, coords=[x.roi.values, x.time.values],
@@ -140,7 +140,7 @@ if __name__ == '__main__':
         y.append(_y.mean('trials', keepdims=True))
     x = xr.concat(x, 'trials')
     y = xr.concat(y, 'trials')
-    summary = stats_two_conditions(abs(x), abs(y), test)
+    summary = stats_two_conditions(x, y, test)
     summary, _ = fdr_correction(summary, method='i')
 
     scatter_rois(summary.corr_pval)
