@@ -24,7 +24,7 @@ def get_data_condition_pre(data, condition):
 
 
 def stats_two_conditions(x, y, statfunc):
-    res = statfunc(x.values, y.values, axis=-1)
+    res = statfunc(x.values, y.values, axis=-1, alternative='greater')
     stat = xr.DataArray(res.statistic, coords=[x.roi.values, x.time.values],
                         dims=['roi', 'time'], name='statistic')
     pval = xr.DataArray(res.pvalue, coords=[x.roi.values, x.time.values],
@@ -62,7 +62,7 @@ if __name__ == '__main__':
     # subjects = ['sub-03']
     ses = '01'
 
-    dest_dir = '/Disk2/EmoSleep/derivatives/results/evoked_k_complexes/statistics/290923'
+    dest_dir = '/Disk2/EmoSleep/derivatives/results/evoked_k_complexes/statistics/021023'
 
     ltc_fname = op.join(datapath, '{0}', 'mne', 'ltc', '{0}_ses-{1}_ltc.nc')
     
@@ -140,7 +140,7 @@ if __name__ == '__main__':
         y.append(_y.mean('trials', keepdims=True))
     x = xr.concat(x, 'trials')
     y = xr.concat(y, 'trials')
-    summary = stats_two_conditions(x, y, test)
+    summary = stats_two_conditions(abs(x), abs(y), test)
     summary, _ = fdr_correction(summary, method='i')
 
     scatter_rois(summary.corr_pval)
